@@ -1,2 +1,2 @@
 # tary-workflow
-A workflow by Gulp
+A workflow by Gulp.

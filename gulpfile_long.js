@@ -16,6 +16,8 @@ var changed = require("gulp-changed"); // 尝试change失败
 // var imagemin = require('gulp-imagemin'); //图片压缩
 
 
+
+
 // src中 匹配符“!”，“*”，“**”，“{}”的用法 *表示任意字符 **表示任意多个文件夹 ！表示不匹配 {}表示匹配指定某个 多个的话 用逗号分隔如 gulp.src(['src/js/*.js', '!src/js/**/{test1,test2}.js']) 
 
 function getPath(p) {

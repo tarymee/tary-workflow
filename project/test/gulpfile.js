@@ -2,7 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 var del = require('del');
-var copy = require('./tasks/copy.js');
+// var copy = require('./tasks/copy.js');
 var browserSync = require('browser-sync').create();
 var gulp = require('gulp');
 var plumber = require('gulp-plumber');
@@ -48,6 +48,7 @@ var paths = {
         css: './src/css/**/*.css',
         cssDir: './src/css',
         js: './src/js/**/*.js',
+        lib: './src/lib/**/*',
         img: './src/img/**/*.{JPG,jpg,png,gif,svg}',
         imgSprite: './src/img/sprite/**/*.{JPG,jpg,png}',
         imgSpriteDir: './src/img/sprite',
@@ -59,6 +60,7 @@ var paths = {
         htmlDir: './dist',
         cssDir: './dist/css',
         jsDir: './dist/js',
+        libDir: './dist/lib',
         imgDir: './dist/img',
         imgSpriteDir: './dist/img/sprite',
         mediaDir: './dist/media'
@@ -264,7 +266,7 @@ gulp.task('zip', gulp.series(
 
 
 // build sprite
-gulp.task("aaa", function() {
+gulp.task("sprite", function() {
     var timestamp = +new Date();
     return gulp.src("./src/test/css/index.css")
         .pipe(spriter({
@@ -275,7 +277,14 @@ gulp.task("aaa", function() {
         .pipe(gulp.dest('./src/test/css/debug'))
 })
 
-
+gulp.task("aaa", function() {
+    return gulp.src(paths.src.js)
+        .pipe(uglify())
+        .pipe(gulp.dest(paths.dist.jsDir))
+        .on('finish', function() {
+            process.stdout.write('完成编译压缩js到dist\n');
+        })
+})
 
 
 // 帮助
@@ -307,7 +316,6 @@ gulp.task('help', function() {
     };
     console.log(styles.green[0], '\n');
     console.log(styles.green[0], 'gulp【初始化】\n');
-    console.log(styles.green[0], 'gulp init【初始化之后开启服务器】\n');
     console.log(styles.green[0], 'gulp build【打包】\n');
     console.log(styles.green[0], 'gulp zip【压缩】\n');
     console.log(styles.green[0], 'gulp help【查看帮助文档】\n');

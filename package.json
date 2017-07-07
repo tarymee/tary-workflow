@@ -1,6 +1,6 @@
 {
   "name": "tary-workflow",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "A f2e project workflow based on Gulp",
   "repository": {
     "type": "git",
@@ -24,12 +24,12 @@
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-cssnano": "^2.1.2",
     "gulp-htmlmin": "^3.0.0",
+    "gulp-if": "^2.0.2",
     "gulp-imagemin": "^3.1.1",
     "gulp-less": "^3.3.0",
     "gulp-plumber": "^1.1.0",
-    "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.3.2",
-    "gulp-spriter": "^1.1.5",
+    "gulp-tmtsprite": "0.0.22",
     "gulp-uglify": "^2.0.0",
     "gulp-zip": "^3.2.0",
     "imagemin-pngquant": "^5.0.0"

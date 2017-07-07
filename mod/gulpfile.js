@@ -277,6 +277,11 @@ gulp.task('build', gulp.series(
     gulp.parallel(miniCss, imageminSprite)
 ));
 
+// 开启dist目录服务器
+gulp.task('server', gulp.series(
+    serverDist
+));
+
 // 打包
 gulp.task('zip', gulp.series(delZip, 'build', buildZip, delDist));
 

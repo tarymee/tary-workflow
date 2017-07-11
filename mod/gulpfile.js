@@ -27,7 +27,7 @@ var paths = {
     src: {
         dir: './src',
         file: './src/**/*',
-        html: './src/**/*.html',
+        html: './src/*.html',
         less: './src/css/**/*.less',
         sass: './src/css/**/*.scss',
         css: './src/css/**/*.css',
@@ -40,9 +40,11 @@ var paths = {
     dist: {
         dir: './dist',
         file: './dist/**/*',
+        html: './dist/*.html',
         htmlDir: './dist',
         css: './dist/css/**/*.css',
         cssDir: './dist/css',
+        js: './dist/js/**/*.js',
         jsDir: './dist/js',
         libDir: './dist/lib',
         imgDir: './dist/img',
@@ -72,7 +74,8 @@ function serverSrc() {
     })
 }
 
-// 把dist文件夹作为服务器开启
+// 把dist文件夹作为服务器开启 主要是为了看打包之后的效果与开发时有没有差别
+// 必须先用 gulp build 命令创建dist文件夹 才可以开启
 function serverDist() {
     process.stdout.write('Starting server on dist folder...\n');
     browserSync.init({
@@ -92,14 +95,19 @@ function serverDist() {
     })
 }
 
-// 编译 html
+// copy src目录的html到dist目录
 function buildHtml() {
     return gulp.src(paths.src.html)
+        .pipe(gulp.dest(paths.dist.htmlDir))
+}
+// 压缩 html
+function miniHtml() {
+    return gulp.src(paths.dist.html)
         .pipe(htmlmin({
             removeComments: true, // 清除HTML注释
             collapseWhitespace: true, // 压缩HTML
             collapseBooleanAttributes: false, // 省略布尔属性的值 <input checked="true"/> ==> <input />
-            removeEmptyAttributes: false, // 删除所有空格作属性值 <input id="" /> ==> <input />
+            removeEmptyAttributes: false, // 删除所有空格的属性值 <input id="" /> ==> <input />
             removeScriptTypeAttributes: true, // 删除<script>的type="text/javascript"
             removeStyleLinkTypeAttributes: true, // 删除<style>和<link>的type="text/css"
             minifyJS: true, // 压缩页面JS
@@ -107,6 +115,7 @@ function buildHtml() {
         }))
         .pipe(gulp.dest(paths.dist.htmlDir))
 }
+
 
 // 编译 less 到 src
 function compileLess() {
@@ -124,7 +133,7 @@ function compileSass() {
         .pipe(gulp.dest(paths.src.cssDir))
 }
 
-// copysrc目录的css到dist目录
+// copy src目录的css到dist目录
 function buildCss() {
     return gulp.src(paths.src.css)
         .pipe(gulp.dest(paths.dist.cssDir))
@@ -160,17 +169,20 @@ function imageminSprite() {
         .pipe(gulp.dest('./dist/img/sprite'))
 }
 
-// 压缩 js
+// copy src目录的js到dist目录
 function buildJs() {
     return gulp.src(paths.src.js)
-        .pipe(uglify())
         .pipe(gulp.dest(paths.dist.jsDir))
-        .on('finish', function() {
-            // process.stdout.write('deal js to dist...【done！】\n');
-        })
 }
 
-// build lib
+// 压缩 js
+function miniJs() {
+    return gulp.src(paths.dist.js)
+        .pipe(uglify())
+        .pipe(gulp.dest(paths.dist.jsDir))
+}
+
+// copy lib目录到dist目录
 function buildLib() {
     return gulp.src(paths.src.lib)
         .pipe(gulp.dest(paths.dist.libDir))
@@ -262,30 +274,57 @@ gulp.task('dev', gulp.series(
 
 /**
  * [生产模式]
+ * @ src release 到 dist 目录
  * @ 清除HTML注释 压缩HTML
- * @ 压缩JS
  * @ Less/Sass -> CSS -> 压缩
+ * @ 压缩JS
  * @ 雪碧图合成
  * @ 图片压缩
- * @ src release 到 dist 目录
  */
 gulp.task('build', gulp.series(
     delDist,
     gulp.parallel(compileLess, compileSass),
     gulp.parallel(buildCss, buildImg, buildHtml, buildJs, buildLib, buildMedia),
+    gulp.parallel(miniCss, miniHtml, miniJs),
     sprite,
-    gulp.parallel(miniCss, imageminSprite)
+    imageminSprite
 ));
 
-// 开启dist目录服务器
-gulp.task('server', gulp.series(
+/**
+ * [生产模式 - 开发]
+ * @ src release 到 dist 目录
+ * @ Less/Sass -> CSS
+ * @ 雪碧图合成
+ * @ 图片压缩
+ * @ 与 build 模式的区别是没有压缩HTML CSS 和 JS 给开发套页面时方便调试
+ */
+gulp.task('build-dev', gulp.series(
+    delDist,
+    gulp.parallel(compileLess, compileSass),
+    gulp.parallel(buildCss, buildImg, buildHtml, buildJs, buildLib, buildMedia),
+    // gulp.parallel(miniCss, miniHtml, miniJs),
+    sprite,
+    imageminSprite
+));
+
+/**
+ * [把dist文件夹作为服务器开启]
+ * @ 主要是为了看打包之后的效果与开发时有没有区别
+ * @ 必须先用 gulp build 命令创建dist文件夹 才可以开启
+ */
+gulp.task('dist', gulp.series(
     serverDist
 ));
 
-// 打包
+/**
+ * [打包]
+ */
 gulp.task('zip', gulp.series(delZip, 'build', buildZip, delDist));
+gulp.task('zip-dev', gulp.series(delZip, 'build-dev', buildZip, delDist));
 
-// 帮助
+/**
+ * [帮助]
+ */
 var styles = {
     'bold': '\x1B[1m',
     'italic': '\x1B[3m',
@@ -311,11 +350,14 @@ var styles = {
     'redBG': '\x1B[41m',
     'yellowBG': '\x1B[43m'
 };
+
 gulp.task('help', function() {
     console.log('\n');
     console.log(styles.green, 'gulp dev【开发模式】\n');
+    console.log(styles.green, 'gulp dist【开启dist目录服务器】\n');
     console.log(styles.green, 'gulp build【打包】\n');
-    console.log(styles.green, 'gulp server【开启dist目录服务器】\n');
-    console.log(styles.green, 'gulp zip【压缩】\n');
+    console.log(styles.green, 'gulp build-dev【打包开发模式 没有压缩HTML CSS JS】\n');
+    console.log(styles.green, 'gulp zip【打包压缩 build 模式】\n');
+    console.log(styles.green, 'gulp zip-dev【打包压缩 build-dev 模式】\n');
     console.log(styles.green, 'gulp help【查看帮助文档】\n');
 })

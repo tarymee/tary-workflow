@@ -18,12 +18,6 @@ function getNowTime() {
     return time;
 }
 
-
-
-function init() {
-    
-}
-
 // 初始化任务
 gulp.task('init', function() {
     var fileName = '';
@@ -53,7 +47,7 @@ gulp.task('init', function() {
                 rl.close();
             } else {
                 console.log('正在创建' + fileName + '项目...');
-                return gulp.src('./mod/**/*')
+                return gulp.src('./template/**/*')
                     .pipe(gulp.dest('./project/' + fileName))
                     .on('finish', function() {
                         console.log(fileName + '项目创建成功！\n请进入该项目启动服务器...');

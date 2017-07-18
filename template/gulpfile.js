@@ -14,6 +14,7 @@ var tmtsprite = require('gulp-tmtsprite'); // 雪碧图合并
 var imagemin = require('gulp-imagemin'); // 压缩图片
 var pngquant = require('imagemin-pngquant'); // 压缩图片质量
 var zip = require('gulp-zip'); // 打包
+var babel = require('gulp-babel'); // babel
 
 // 刷新服务器
 function browserSyncReload() {
@@ -182,6 +183,16 @@ function miniJs() {
         .pipe(gulp.dest(paths.dist.jsDir))
 }
 
+// 编译 js 到 src
+function compileJs() {
+    return gulp.src(paths.src.js)
+        .pipe(plumber())
+        .pipe(babel({
+            presets: ['es2015']
+        }))
+        .pipe(gulp.dest(paths.dist.jsDir))
+}
+
 // copy lib目录到dist目录
 function buildLib() {
     return gulp.src(paths.src.lib)
@@ -206,7 +217,7 @@ function buildImg() {
         }))
         .pipe(gulp.dest(paths.dist.imgDir))
 }
-//监听文件
+// 监听文件
 function watchCss(cb) {
     process.stdout.write('watching less&sass to compile...\n');
     // gulp.watch([paths.src.sass, paths.src.less], gulp.parallel(compileSass, compileLess))
@@ -231,7 +242,29 @@ function watchCss(cb) {
         })
     cb();
 }
-
+// 监听JS文件 转化ES6
+function watchJs(cb) {
+    process.stdout.write('watching js to compile...\n');
+    // gulp.watch([paths.src.sass, paths.src.less], gulp.parallel(compileSass, compileLess))
+    gulp.watch(paths.src.js)
+        .on('change', function(file) {
+            process.stdout.write(file + ' has been changed');
+            compileJs();
+        })
+        .on('add', function(file) {
+            process.stdout.write(file + ' has been added');
+            compileJs();
+        })
+        .on('unlink', function(file) {
+            process.stdout.write(file + ' is deleted');
+            // 取文件后缀
+            var ext = path.extname(file);
+            // 删除生成的css文件
+            var tmp = file.replace(ext, '.js');
+            del([tmp]);
+        })
+    cb();
+}
 // 删除dist下的文件
 function delDist() {
     return del(paths.dist.dir).then(function() {
@@ -268,7 +301,10 @@ gulp.task('dev', gulp.series(
         compileLess,
         compileSass
     ),
-    watchCss,
+    gulp.parallel(
+        watchCss,
+        watchJs
+    ),
     serverSrc
 ));
 

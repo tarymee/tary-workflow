@@ -1,9 +1,1 @@
 *{padding:0px;margin:0px;}
-
-/**
- * 雪碧图写法
- * @ 把图片放在 img/slice 文件夹下引用
- * @ 定义宽高 背景只能用background-image写 而不能写background
- */
-.spriteA{margin:5px 0;width:80px;height:80px;background-image:url(../img/slice/a.png);}
-.spriteB{margin:5px 0;width:80px;height:80px;background-image:url(../img/slice/b.png);}

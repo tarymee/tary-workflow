@@ -7,10 +7,8 @@ var gulpif = require('gulp-if');
 var plumber = require('gulp-plumber');
 var htmlmin = require('gulp-htmlmin'); // 压缩html
 var less = require('gulp-less'); // 编译less
-var sass = require('gulp-sass'); // 编译sass
 var cssnano = require('gulp-cssnano'); // 压缩css
 var uglify = require('gulp-uglify'); // 压缩js
-var tmtsprite = require('gulp-tmtsprite'); // 雪碧图合并
 var imagemin = require('gulp-imagemin'); // 压缩图片
 var pngquant = require('imagemin-pngquant'); // 压缩图片质量
 var zip = require('gulp-zip'); // 打包
@@ -30,7 +28,6 @@ var paths = {
         file: './src/**/*',
         html: './src/*.html',
         less: './src/css/**/*.less',
-        sass: './src/css/**/*.scss',
         css: './src/css/**/*.css',
         cssDir: './src/css',
         js: './src/js/**/*.js',
@@ -126,13 +123,6 @@ function compileLess() {
         .pipe(gulp.dest(paths.src.cssDir))
 }
 
-// 编译 sass 到 src
-function compileSass() {
-    return gulp.src(paths.src.sass)
-        .pipe(plumber())
-        .pipe(sass())
-        .pipe(gulp.dest(paths.src.cssDir))
-}
 
 // copy src目录的css到dist目录
 function buildCss() {
@@ -145,29 +135,6 @@ function miniCss() {
     return gulp.src(paths.dist.css)
         .pipe(cssnano()) // 压缩css
         .pipe(gulp.dest(paths.dist.cssDir))
-}
-
-// 雪碧图
-function sprite() {
-    return gulp.src(paths.dist.css)
-        .pipe(tmtsprite({
-            margin: 0,
-            slicePath: '../img/slice'
-        }))
-        .pipe(gulpif('*.png', gulp.dest('./dist/img/sprite'), gulp.dest(paths.dist.cssDir)));
-}
-
-// 压缩雪碧图
-function imageminSprite() {
-    return gulp.src('./dist/img/sprite/**/*')
-        .pipe(imagemin({
-            // optimizationLevel: 5, // 类型：Number  默认：3  取值范围：0-7（优化等级）
-            // progressive: true, // 类型：Boolean 默认：false 无损压缩jpg图片
-            // interlaced: true, // 类型：Boolean 默认：false 隔行扫描gif进行渲染
-            // multipass: true // 类型：Boolean 默认：false 多次优化svg直到完全优化
-            use: [pngquant()] // 使用pngquant深度压缩png图片的imagemin插件
-        }))
-        .pipe(gulp.dest('./dist/img/sprite'))
 }
 
 // copy src目录的js到dist目录
@@ -219,17 +186,15 @@ function buildImg() {
 }
 // 监听文件
 function watchCss(cb) {
-    process.stdout.write('watching less&sass to compile...\n');
-    // gulp.watch([paths.src.sass, paths.src.less], gulp.parallel(compileSass, compileLess))
-    gulp.watch([paths.src.sass, paths.src.less])
+    process.stdout.write('watching less to compile...\n');
+    // gulp.watch([paths.src.less], gulp.parallel(compileLess))
+    gulp.watch([paths.src.less])
         .on('change', function(file) {
             process.stdout.write(file + ' has been changed');
-            compileSass();
             compileLess();
         })
         .on('add', function(file) {
             process.stdout.write(file + ' has been added');
-            compileSass();
             compileLess();
         })
         .on('unlink', function(file) {
@@ -245,7 +210,6 @@ function watchCss(cb) {
 // 监听JS文件 转化ES6
 function watchJs(cb) {
     process.stdout.write('watching js to compile...\n');
-    // gulp.watch([paths.src.sass, paths.src.less], gulp.parallel(compileSass, compileLess))
     gulp.watch(paths.src.js)
         .on('change', function(file) {
             process.stdout.write(file + ' has been changed');
@@ -293,13 +257,12 @@ function delZip() {
 
 /**
  * [开发模式]
- * @ Less/Sass -> CSS
+ * @ Less -> CSS
  * @ 监听文件变动 自动刷新浏览器 (LiveReload)
  */
 gulp.task('dev', gulp.series(
     gulp.parallel(
-        compileLess,
-        compileSass
+        compileLess
     ),
     gulp.parallel(
         watchCss,
@@ -312,35 +275,31 @@ gulp.task('dev', gulp.series(
  * [生产模式]
  * @ src release 到 dist 目录
  * @ 清除HTML注释 压缩HTML
- * @ Less/Sass -> CSS -> 压缩
+ * @ Less -> CSS -> 压缩
  * @ 压缩JS
  * @ 雪碧图合成
  * @ 图片压缩
  */
 gulp.task('build', gulp.series(
     delDist,
-    gulp.parallel(compileLess, compileSass),
+    gulp.parallel(compileLess),
     gulp.parallel(buildCss, buildImg, buildHtml, buildJs, buildLib, buildMedia),
-    gulp.parallel(miniCss, miniHtml, miniJs),
-    sprite,
-    imageminSprite
+    gulp.parallel(miniCss, miniHtml, miniJs)
 ));
 
 /**
  * [生产模式 - 开发]
  * @ src release 到 dist 目录
- * @ Less/Sass -> CSS
+ * @ Less -> CSS
  * @ 雪碧图合成
  * @ 图片压缩
  * @ 与 build 模式的区别是没有压缩HTML CSS 和 JS 给开发套页面时方便调试
  */
 gulp.task('build-dev', gulp.series(
     delDist,
-    gulp.parallel(compileLess, compileSass),
-    gulp.parallel(buildCss, buildImg, buildHtml, buildJs, buildLib, buildMedia),
-    // gulp.parallel(miniCss, miniHtml, miniJs),
-    sprite,
-    imageminSprite
+    gulp.parallel(compileLess),
+    gulp.parallel(buildCss, buildImg, buildHtml, buildJs, buildLib, buildMedia)
+    // gulp.parallel(miniCss, miniHtml, miniJs)
 ));
 
 /**

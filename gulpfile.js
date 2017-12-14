@@ -1,6 +1,5 @@
 'use strict';
 var fs = require('fs');
-var del = require('del');
 var browserSync = require('browser-sync').create();
 var gulp = require('gulp');
 

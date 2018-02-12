@@ -6,10 +6,10 @@ var gulp = require('gulp')
 var plumber = require('gulp-plumber')
 // var htmlmin = require('gulp-htmlmin') // 压缩html
 var less = require('gulp-less') // 编译less
-// var cssnano = require('gulp-cssnano') // 压缩css
-// var uglify = require('gulp-uglify') // 压缩js
-// var imagemin = require('gulp-imagemin') // 压缩图片
-// var pngquant = require('imagemin-pngquant') // 压缩图片质量
+var cssnano = require('gulp-cssnano') // 压缩css
+var uglify = require('gulp-uglify') // 压缩js
+var imagemin = require('gulp-imagemin') // 压缩图片
+var pngquant = require('imagemin-pngquant') // 压缩图片质量
 var zip = require('gulp-zip') // 打包
 var babel = require('gulp-babel') // babel
 
@@ -132,7 +132,7 @@ function buildCss() {
 // 压缩dist文件夹的css
 function miniCss() {
     return gulp.src(paths.dist.css)
-        // .pipe(cssnano()) // 压缩css
+        .pipe(cssnano()) // 压缩css
         .pipe(gulp.dest(paths.dist.cssDir))
 }
 
@@ -145,7 +145,7 @@ function buildJs() {
 // 压缩 js
 function miniJs() {
     return gulp.src(paths.dist.js)
-        // .pipe(uglify())
+        .pipe(uglify())
         .pipe(gulp.dest(paths.dist.jsDir))
 }
 
@@ -174,13 +174,13 @@ function buildMedia() {
 // 压缩图片 并release到dist目录
 function buildImg() {
     return gulp.src(paths.src.img)
-        // .pipe(imagemin({
-        //     // optimizationLevel: 5, // 类型：Number  默认：3  取值范围：0-7（优化等级）
-        //     // progressive: true, // 类型：Boolean 默认：false 无损压缩jpg图片
-        //     // interlaced: true, // 类型：Boolean 默认：false 隔行扫描gif进行渲染
-        //     // multipass: true // 类型：Boolean 默认：false 多次优化svg直到完全优化
-        //     use: [pngquant()] // 使用pngquant深度压缩png图片的imagemin插件
-        // }))
+        .pipe(imagemin({
+            // optimizationLevel: 5, // 类型：Number  默认：3  取值范围：0-7（优化等级）
+            // progressive: true, // 类型：Boolean 默认：false 无损压缩jpg图片
+            // interlaced: true, // 类型：Boolean 默认：false 隔行扫描gif进行渲染
+            // multipass: true // 类型：Boolean 默认：false 多次优化svg直到完全优化
+            use: [pngquant()] // 使用pngquant深度压缩png图片的imagemin插件
+        }))
         .pipe(gulp.dest(paths.dist.imgDir))
 }
 // 监听文件

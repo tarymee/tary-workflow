@@ -1,11 +1,7 @@
 {
-  "name": "tary-workflow",
+  "name": "test",
   "version": "2.0.0",
-  "description": "A f2e project workflow based on Gulp",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tarymee/tary-workflow"
-  },
+  "description": "test",
   "keywords": [
     "Workflow",
     "F2E",
